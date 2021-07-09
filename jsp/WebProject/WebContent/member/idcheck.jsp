@@ -10,7 +10,7 @@
 </head>
 <body>
 	<h2>아이디 중복확인</h2>
-	<form action="idcheck.do" method="get" name="frm"></form>
+	<form action="idcheck.do" method="get" name="frm">
 	아이디 <input type="text" name="userid" value="${userid}">
 	<input type="submit" value="중복체크">
 	<br>
@@ -24,5 +24,6 @@
 		${userid}는 사용 가능한 아이디 입니다.
 		<input type="button" value="사용" class="cancel" onclick="idok('${userid}')">
 	</c:if>
+	</form>
 </body>
 </html>

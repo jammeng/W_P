@@ -10,21 +10,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+//import com.oracle.jrockit.jfr.RequestDelegate;
 import com.saeyan.dao.MemberDAO;
 import com.saeyan.dto.MemberVO;
 
-
 /**
- * Servlet implementation class LoginServlet
+ * Servlet implementation class MemberUpdateServlet
  */
-@WebServlet("/login.do")
-public class LoginServlet extends HttpServlet {
+@WebServlet("/memberUpdate.do")
+public class MemberUpdateServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public LoginServlet() {
+    public MemberUpdateServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -35,14 +35,13 @@ public class LoginServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
-		String url = "member/login.jsp";
-		HttpSession session = request.getSession();
+		String userid = request.getParameter("userid");
+		MemberDAO mDao = MemberDAO.getInstance();
 		
-		if(session.getAttribute("loginUser") != null) { //이미 로그인 된 사용자 이면
-			url="main.jsp"; //메인 페이지로 이동
-		}
+		MemberVO mVo = mDao.getMember(userid);
+		request.setAttribute("mVo", mVo);
 		
-		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("member/memberUpdate.jsp");
 		dispatcher.forward(request, response);
 	}
 
@@ -52,28 +51,32 @@ public class LoginServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		//doGet(request, response);
-		String url = "member/login.jsp";
+		
+		//한글 깨짐 방지 (서블렛 post)
+		request.setCharacterEncoding("UTF-8");
+		
+		//폼에서 입력한 회원정보를 얻어오기
+		String name = request.getParameter("name");
 		String userid = request.getParameter("userid");
 		String pwd = request.getParameter("pwd");
+		String email = request.getParameter("email");
+		String phone = request.getParameter("phone");
+		String admin = request.getParameter("admin");
 		
-		MemberDAO mDao = MemberDAO.getInstance();
+		//회원정보를 저장할 객체를 생성
+		MemberVO mVo = new MemberVO();
+		mVo.setName(name);
+		mVo.setUserid(userid);
+		mVo.setPwd(pwd);
+		mVo.setEmail(email);
+		mVo.setPhone(phone);
+		mVo.setAdmin(Integer.parseInt(admin));
 		
-		int result = mDao.userCheck(userid ,pwd);
-		if(result == 1) {
-			MemberVO mVo = mDao.getMember(userid);
-			HttpSession session = request.getSession();
-			session.setAttribute("loginUser", mVo);
-			request.setAttribute("message", "회원가입에 성공했습니다");
-			url = "main.jsp";
-		}
-		else if (result == 0) {
-			request.setAttribute("message", "비밀번호가 맞지 않습니다..");
-		}
-		else if (result == -1) {
-			request.setAttribute("message", "존재하지 않는 회원입니다.");
-		}
-		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
-		dispatcher.forward(request, response);
+		MemberDAO  mDao = MemberDAO.getInstance();
+		mDao.updateMember(mVo);
+		response.sendRedirect("login.do");
+		
+		
 	}
 
 }
